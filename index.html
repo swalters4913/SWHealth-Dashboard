@@ -35,9 +35,9 @@ nav button.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
 .dname{font-size:10px;font-weight:600;margin-bottom:1px}
 .ddate{font-size:9px;color:#aaa;margin-bottom:3px}
 .dtag{font-size:9px;padding:1px 5px;border-radius:20px;display:inline-block;margin-bottom:3px}
-.tw{background:#E6F1FB;color:#0C447C}.tm{background:#E1F5EE;color:#085041}.tr{background:#f0ede8;color:#5F5E5A}.ta{background:#FAEEDA;color:#633806}.td{background:#1D9E75;color:#fff}
+.tw{background:#E6F1FB;color:#0C447C}.tm{background:#E1F5EE;color:#085041}.tr{background:#f0ede8;color:#5F5E5A}.ta{background:#FAEEDA;color:#633806}.td{background:#1D9E75;color:#fff}.tbw{background:#F3E8FF;color:#5B21B6}
 .ddesc{font-size:9px;color:#888;line-height:1.3;margin-bottom:4px}
-.cbtn{width:100%;padding:4px 0;border:1px solid #e5e5e5;border-radius:5px;background:#f5f5f3;font-size:10px;color:#888;cursor:pointer;transition:background .15s}
+.cbtn{width:100%;padding:4px 0;border:1px solid #e5e5e5;border-radius:5px;background:#f5f5f3;font-size:10px;color:#888;cursor:pointer}
 .cbtn.done{background:#1D9E75;border-color:#1D9E75;color:#fff}
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .sbox{background:#f5f5f3;border-radius:8px;padding:10px;text-align:center}
@@ -93,12 +93,16 @@ textarea{min-height:75px;resize:vertical}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-dh{text-align:center;font-size:10px;font-weight:600;color:#aaa;padding-bottom:4px}
 .cal-cell{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.cal-cell.clickable{cursor:pointer}
+.cal-cell.clickable:active{opacity:.7}
 .cal-cell.done{background:#1D9E75;color:#fff;font-weight:600}
-.cal-cell.today{background:#E6F1FB;color:#0C447C;font-weight:600;border:1.5px solid #378ADD}
+.cal-cell.istoday{background:#E6F1FB;color:#0C447C;font-weight:600;border:1.5px solid #378ADD}
+.cal-cell.istoday.done{background:#1D9E75;color:#fff;border:1.5px solid #1D9E75}
 .cal-cell.trackable{background:#f5f5f3;color:#555}
 .cal-cell.other{color:#ddd}
 .cal-legend{display:flex;gap:14px;margin-top:12px;font-size:11px;color:#888;flex-wrap:wrap}
 .leg-dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:middle}
+.cal-hint{font-size:11px;color:#aaa;text-align:center;margin-top:10px}
 .walk-dist{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:2px}
 .walk-dist input{margin-bottom:0}
 </style>
@@ -107,9 +111,9 @@ textarea{min-height:75px;resize:vertical}
 <div class="app">
   <header>
     <h1>Health Dashboard</h1>
-    <span class="wbadge" id="weekBadge">Week 1</span>
+    <span class="wbadge" id="weekBadge"></span>
   </header>
-  <nav id="nav">
+  <nav>
     <button class="active" onclick="showTab('schedule',this)">Schedule</button>
     <button onclick="showTab('exercises',this)">Exercises</button>
     <button onclick="showTab('nutrition',this)">Nutrition</button>
@@ -134,13 +138,15 @@ textarea{min-height:75px;resize:vertical}
 
     <div id="exercises" class="tab">
       <div class="warn-banner">No spinal flexion loading. No crunches, sit-ups, or forward toe-touches. Protect that L4/L5.</div>
-      <div class="slabel">Daily morning spine reset — 5 min (every day)</div>
+      <div class="slabel">Daily morning spine reset — 5 min (every day, before work)</div>
       <div id="srList"></div>
-      <div class="slabel">Full mobility routine — 20 min (Mon / Wed / Fri)</div>
+      <div class="slabel">Bodyweight workout — 30 min (Mon / Wed / Fri, after work)</div>
+      <div id="bwList"></div>
+      <div class="slabel">Full mobility routine — 20 min (Tue / Thu, after work)</div>
       <div id="exList"></div>
-      <div class="slabel">Pre-walk warm-up — 5 min (before every walk)</div>
+      <div class="slabel">Pre-walk warm-up — 5 min</div>
       <div id="pwList"></div>
-      <div class="slabel">Post-walk cool-down — 8–10 min (after every walk)</div>
+      <div class="slabel">Post-walk cool-down — 8–10 min</div>
       <div id="pcList"></div>
     </div>
 
@@ -176,7 +182,7 @@ textarea{min-height:75px;resize:vertical}
       <div class="card" id="rulesList"></div>
       <div class="slabel">Sciatica protocol</div>
       <div class="card" style="font-size:12px;color:#555;line-height:1.7">
-        <strong>If pain flares mid-walk:</strong> stop. Turn around. Walk easy back. Do not push through nerve pain — ever.<br><br>
+        <strong>If pain flares mid-workout or walk:</strong> stop. Do not push through nerve pain — ever.<br><br>
         <strong>Positions that help:</strong> lying on your back with knees bent, or on your side in fetal position.<br><br>
         <strong>Positions to avoid:</strong> prolonged sitting on hard surfaces, forward bending with straight legs, sitting with legs crossed.<br><br>
         <strong>Heat vs. cold:</strong> gentle heat on the lower back reduces muscle tension. Ice if acutely inflamed.<br><br>
@@ -185,7 +191,7 @@ textarea{min-height:75px;resize:vertical}
       <div class="slabel">Migraine awareness</div>
       <div class="card" style="font-size:12px;color:#555;line-height:1.7">
         Hydration is your #1 defense. Dehydration is the most common migraine trigger.<br><br>
-        If a headache starts during a walk, stop, hydrate, find shade.<br><br>
+        New job stress is a real trigger. Stay on top of water especially during the workday.<br><br>
         Alcohol + dehydration = migraine setup. On nights you drink, add an extra 16 oz of water before bed.
       </div>
     </div>
@@ -199,6 +205,7 @@ textarea{min-height:75px;resize:vertical}
         <select id="logActivity" onchange="toggleWalkFields()">
           <option value="">Select...</option>
           <option>Morning spine reset (5 min)</option>
+          <option>Bodyweight workout (30 min)</option>
           <option>Mobility session (20 min)</option>
           <option>Pre-walk warm-up</option>
           <option>Walk — 1–2 miles</option>
@@ -212,23 +219,17 @@ textarea{min-height:75px;resize:vertical}
         </select>
         <div id="walkFields" style="display:none">
           <div class="walk-dist">
-            <div>
-              <label>Distance (miles)</label>
-              <input type="number" id="logMiles" min="0" step="0.1" placeholder="e.g. 2.8">
-            </div>
-            <div>
-              <label>Duration (min)</label>
-              <input type="number" id="logDuration" min="0" step="1" placeholder="e.g. 52">
-            </div>
+            <div><label>Distance (miles)</label><input type="number" id="logMiles" min="0" step="0.1" placeholder="e.g. 2.8"></div>
+            <div><label>Duration (min)</label><input type="number" id="logDuration" min="0" step="1" placeholder="e.g. 52"></div>
           </div>
         </div>
-        <label>How did it feel? Any sciatica or neck/back notes?</label>
-        <textarea id="logFeeling" placeholder="e.g. Sciatica quiet today, neck still tight..."></textarea>
+        <label>How did it feel? Any sciatica or body notes?</label>
+        <textarea id="logFeeling" placeholder="e.g. Sciatica quiet, back felt good during workout..."></textarea>
         <label>What did you eat today?</label>
-        <textarea id="logFood" placeholder="e.g. Eggs + toast, chicken sandwich at 1pm..."></textarea>
+        <textarea id="logFood" placeholder="e.g. Eggs + toast before work, chicken wrap for lunch..."></textarea>
         <label>Sleep last night (hours + quality)</label>
         <input type="text" id="logSleep" placeholder="e.g. 7.5 hrs, woke up once, felt decent">
-        <label>Anything else (mood, energy, notes)</label>
+        <label>Anything else (mood, energy, work notes)</label>
         <textarea id="logNotes" placeholder="Optional..."></textarea>
         <button class="save-btn" onclick="submitLog()">Save log entry</button>
       </div>
@@ -249,6 +250,7 @@ textarea{min-height:75px;resize:vertical}
         </div>
         <div class="cal-grid" id="calDayHeaders"></div>
         <div class="cal-grid" style="margin-top:4px" id="calGrid"></div>
+        <div class="cal-hint">Tap any past day to toggle completion ✓</div>
         <div class="cal-legend">
           <span><span class="leg-dot" style="background:#1D9E75"></span>Completed</span>
           <span><span class="leg-dot" style="background:#f5f5f3;border:1px solid #e5e5e5"></span>Not logged</span>
@@ -273,15 +275,15 @@ function getWeekStart() {
   return d;
 }
 function buildWeek(ws) {
-  const DO=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const wn=Math.max(1,Math.ceil(((ws-START_DATE)/86400000)/7)+1);
-  const P=[
-    {tag:"walk",tl:"Walk",desc:"3–4 mi walk. Spine reset + warm-up/cool-down.",tasks:["Morning spine reset (5 min)","Pre-walk warm-up","Walk 3–4 miles","Post-walk cool-down"]},
-    {tag:"mob",tl:"Mobility",desc:"Full mobility routine (20 min) + spine reset.",tasks:["Morning spine reset (5 min)","Full mobility routine — 20 min"]},
-    {tag:"walk",tl:"Walk",desc:"3–4 mi walk. Spine reset + warm-up/cool-down.",tasks:["Morning spine reset (5 min)","Pre-walk warm-up","Walk 3–4 miles","Post-walk cool-down"]},
-    {tag:"mob",tl:"Mobility",desc:"Full mobility routine (20 min) + spine reset.",tasks:["Morning spine reset (5 min)","Full mobility routine — 20 min"]},
-    {tag:"walk",tl:"Walk",desc:"2–3 mi easy. GF weekend at 5pm.",tasks:["Morning spine reset (5 min)","Pre-walk warm-up","Walk 2–3 miles","Post-walk cool-down","GF weekend begins at 5pm"]},
-    {tag:"active",tl:"Active",desc:"GF activity — trail, hike, or outdoor time.",tasks:["Active outing with GF"]},
+  const DO = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const wn = Math.max(1, Math.ceil(((ws-START_DATE)/86400000)/7)+1);
+  const P = [
+    {tag:"bw",tl:"Workout",desc:"Spine reset before work. Bodyweight workout after (4pm).",tasks:["Morning spine reset (5 min) — before work","Bodyweight workout (30 min) — after work","Walk if energy allows"]},
+    {tag:"mob",tl:"Mobility",desc:"Spine reset before work. Mobility routine after.",tasks:["Morning spine reset (5 min) — before work","Full mobility routine (20 min) — after work"]},
+    {tag:"bw",tl:"Workout",desc:"Spine reset before work. Bodyweight workout after (4pm).",tasks:["Morning spine reset (5 min) — before work","Bodyweight workout (30 min) — after work","Walk if energy allows"]},
+    {tag:"mob",tl:"Mobility",desc:"Spine reset before work. Mobility routine after.",tasks:["Morning spine reset (5 min) — before work","Full mobility routine (20 min) — after work"]},
+    {tag:"bw",tl:"Workout",desc:"Spine reset before work. Workout after. GF weekend at 5pm.",tasks:["Morning spine reset (5 min) — before work","Bodyweight workout (30 min) — after work","GF weekend begins at 5pm"]},
+    {tag:"active",tl:"Active",desc:"GF activity — trail, hike, or outdoor time.",tasks:["Active outing with GF — trail, hike, or nature"]},
     {tag:"rest",tl:"Rest",desc:`Full rest. Prep for Week ${wn+1}.`,tasks:["Full rest day","Spine reset if feeling stiff",`Prep for Week ${wn+1}`]},
   ];
   return P.map((p,i)=>{
@@ -289,33 +291,39 @@ function buildWeek(ws) {
     return {...p,day:DO[i],date:`${MNS[d.getMonth()]} ${d.getDate()}`,iso:d.toISOString().slice(0,10)};
   });
 }
+const WS=getWeekStart(), WE=new Date(WS);
+WE.setDate(WE.getDate()+6);
+const WEEK=buildWeek(WS);
+const wn=Math.max(1,Math.ceil(((WS-START_DATE)/86400000)/7)+1);
+document.getElementById('weekBadge').textContent=`Week ${wn} — ${MNS[WS.getMonth()]} ${WS.getDate()}–${MNS[WE.getMonth()]} ${WE.getDate()}`;
+document.getElementById('weekBanner').textContent=`Week ${wn} — New job schedule active. Spine reset before work. Bodyweight workouts Mon/Wed/Fri after work. Mobility Tue/Thu.`;
 
-const WS = getWeekStart();
-const WE = new Date(WS); WE.setDate(WE.getDate()+6);
-const WEEK = buildWeek(WS);
-const wn = Math.max(1,Math.ceil(((WS-START_DATE)/86400000)/7)+1);
-const WEEK_LABEL = `Week ${wn}`;
-const WEEK_RANGE = `${MNS[WS.getMonth()]} ${WS.getDate()}–${MNS[WE.getMonth()]} ${WE.getDate()}`;
-
-document.getElementById('weekBadge').textContent = `${WEEK_LABEL} — ${WEEK_RANGE}`;
-document.getElementById('weekBanner').textContent = `${WEEK_LABEL} — Spine reset every morning. Mobility Tue/Thu. Walks Mon/Wed/Fri. Mark each day done as you complete it.`;
-
-const TAG_CLS = {walk:'tw',mob:'tm',rest:'tr',active:'ta',done:'td'};
+const TAG_CLS={walk:'tw',mob:'tm',rest:'tr',active:'ta',done:'td',bw:'tbw'};
 
 const SR=[
   {name:"Cat-cow",sets:"10 reps slow",purpose:"Pumps fluid through the discs and wakes up the lumbar spine after sleep.",steps:["All fours — hands under shoulders, knees under hips","Inhale: belly drops, tailbone and head rise (cow)","Exhale: spine rounds toward ceiling, chin and pelvis tuck (cat)","Move slowly — feel each vertebra"],caution:"If any position sends pain down the leg, reduce range of motion."},
   {name:"Pelvic tilts",sets:"10 reps",purpose:"Activates deep core and decompresses the lumbar spine — especially important first thing in the morning.",steps:["Lie on back, knees bent, feet flat","Find your natural lower back gap","Exhale: gently flatten that gap, tilting pelvis toward face","Hold 2 seconds, release slowly"],caution:"Small controlled movement only — not a crunch."},
   {name:"Knee-to-chest hold",sets:"30s each side",purpose:"Decompresses L4/L5 nerve root — your most at-risk area.",steps:["Lie on back, knees bent","Bring one knee slowly toward chest, hold behind the thigh","Keep the other foot flat on the floor","Breathe. Switch sides"],caution:"One leg at a time only."},
 ];
+const BW=[
+  {name:"Bodyweight squat",sets:"3 sets × 12 reps",purpose:"Builds quad, glute, and hamstring strength. Foundational lower body movement. Safe for the spine when done with proper form.",steps:["Stand feet shoulder-width apart, toes slightly out","Brace your core gently — firm, not a crunch","Push your hips back and bend your knees — chest stays tall","Lower until thighs are parallel to the floor or as low as comfortable","Press through your heels to stand. Squeeze glutes at the top"],caution:"If you feel sciatica during the descent, reduce depth. Stop if sharp nerve pain appears."},
+  {name:"Reverse lunge",sets:"3 sets × 10 reps each leg",purpose:"Single-leg strength for quads and glutes with less spinal compression than forward lunges. Also trains balance.",steps:["Stand tall, feet hip-width apart","Step one foot straight back and lower your back knee toward the floor","Front shin stays vertical — knee doesn't cave in","Push through the front heel to return to standing","Alternate legs or complete all reps on one side"],caution:"Hold a wall for balance if needed. Don't let the front knee collapse inward."},
+  {name:"Glute bridge",sets:"3 sets × 15 reps",purpose:"Direct glute and posterior chain activation. Protects the lower back and sciatic nerve by building the muscles that surround it.",steps:["Lie on back, knees bent, feet flat and hip-width apart","Press through heels and lift hips until body forms a straight line knees→shoulders","Squeeze your glutes hard at the top — hold 1 second","Lower slowly and controlled","Keep your core gently braced throughout"],caution:"Stop if this causes radiating leg pain. Should feel this in your glutes and hamstrings — not your lower back."},
+  {name:"Wall push-up (progressing to floor)",sets:"3 sets × 12 reps",purpose:"Upper body push strength targeting chest, shoulders, and triceps. Wall version protects the right shoulder while building base strength.",steps:["Stand arm's length from a wall, hands slightly wider than shoulder-width","Keep your body in a straight line — no sagging hips","Lower your chest toward the wall by bending your elbows","Push back to starting position","Progress to incline push-ups on a counter, then floor push-ups as strength builds"],caution:"Right shoulder — if you feel instability or pain, reduce range of motion. Never force through shoulder pain."},
+  {name:"Inverted row (using a table)",sets:"3 sets × 10 reps",purpose:"Pulling strength for the upper back, biceps, and rear shoulders — directly counteracts the rounded posture from mechanic work.",steps:["Lie under a sturdy table and grip the edge with hands shoulder-width apart","Keep your body straight like a plank — heels on the floor","Pull your chest up toward the table by squeezing your shoulder blades together","Lower slowly and controlled","The more horizontal your body, the harder it is — adjust by moving feet closer or farther"],caution:"Make sure the table is stable and can hold your weight before starting."},
+  {name:"Dead bug",sets:"3 sets × 8 reps each side",purpose:"Deep core stability without loading the spine. One of the safest and most effective core exercises for sciatica.",steps:["Lie on your back, arms pointing straight up toward the ceiling","Bring both knees up to 90° — shins parallel to the floor","Press your lower back firmly into the floor — maintain this throughout","Slowly lower your right arm overhead and extend your left leg toward the floor simultaneously","Return to start. Switch sides. Move slowly — the slower the better"],caution:"If your lower back lifts off the floor at any point, reduce range of motion. Never rush this."},
+  {name:"Bird dog",sets:"3 sets × 8 reps each side",purpose:"Trains posterior chain and spinal stabilizers simultaneously. Excellent for sciatica prevention and lower back health.",steps:["Get on all fours — hands under shoulders, knees under hips","Keep your spine neutral — no arching or rounding","Simultaneously extend your right arm forward and left leg back","Hold 2 seconds at the top — both limbs parallel to the floor","Return slowly. Switch sides"],caution:"If your hips rotate or your back arches, reduce range of motion. Quality over range every time."},
+  {name:"Pike push-up",sets:"2 sets × 10 reps",purpose:"Overhead pressing strength for the shoulders without loading the spine. Builds toward eventual overhead press in the gym.",steps:["Start in a push-up position","Walk your hands back toward your feet until your hips are high — inverted V shape","Bend your elbows and lower the top of your head toward the floor","Push back up through your shoulders","Keep core braced throughout"],caution:"Right shoulder — if you feel clicking, instability, or pain, do standard wall push-ups instead."},
+];
 const EX=[
-  {name:"Cat-cow",sets:"2 sets × 10 reps",purpose:"Mobilizes the lumbar and thoracic spine, pumps fluid through the discs, reduces morning stiffness.",steps:["All fours — hands under shoulders, knees under hips","Inhale: belly drops, tailbone and head rise (cow). Hold 1s","Exhale: spine rounds up, chin and pelvis tuck (cat). Hold 1s","Move slowly and deliberately","Feel each vertebra move"],caution:"Sharp nerve pain down the leg → reduce range of motion."},
+  {name:"Cat-cow",sets:"2 sets × 10 reps",purpose:"Mobilizes the lumbar and thoracic spine, pumps fluid through the discs, reduces stiffness.",steps:["All fours — hands under shoulders, knees under hips","Inhale: belly drops, tailbone and head rise (cow). Hold 1s","Exhale: spine rounds up, chin and pelvis tuck (cat). Hold 1s","Move slowly and deliberately","Feel each vertebra move"],caution:"Sharp nerve pain down the leg → reduce range of motion."},
   {name:"Pelvic tilts",sets:"15 reps",purpose:"Activates deep core stabilizers that support the lumbar spine without loading it.",steps:["Lie on back, knees bent, feet flat","Find the natural lower back gap","Exhale: gently flatten that gap, tilt pelvis toward face","Hold 2s. Don't hold your breath","Release slowly. Repeat"],caution:"Very small, controlled movement — not a crunch."},
   {name:"Glute bridge hold",sets:"10 reps × 3s hold",purpose:"Strengthens glutes, hamstrings, and lower back extensors — takes pressure off the sciatic nerve.",steps:["Lie on back, knees bent, feet hip-width apart","Press through heels, lift hips to a straight line knees→shoulders","Squeeze glutes at top — don't hyperextend lower back","Hold 3s. Lower slowly"],caution:"Stop if it causes sharp radiating leg pain."},
   {name:"Knee-to-chest stretch",sets:"30s each leg",purpose:"Decompresses lower lumbar vertebrae and reduces pressure on the sciatic nerve root.",steps:["Lie on back, both knees bent","Bring one knee toward chest — hold behind the thigh","Keep the other foot flat","Hold gently. Breathe. Switch sides"],caution:"One leg at a time only."},
   {name:"Piriformis stretch (figure-4)",sets:"45s each side",purpose:"The piriformis sits directly over the sciatic nerve. When tight it compresses the nerve.",steps:["Lie on back, both knees bent","Cross right ankle over left thigh — figure-4","Feel stretch in right outer hip → hold there","For more: gently pull left thigh toward chest","Breathe. Don't force. Switch sides"],caution:"Feel this in the outer hip/glute — not the knee."},
   {name:"Child's pose",sets:"60 seconds",purpose:"Gently stretches the thoracic and lumbar spine, decompresses the lower back.",steps:["Kneel, big toes touching, knees wide","Sit hips back toward heels","Arms extended forward, forehead down","Let gravity do the work","Breathe deeply into your lower back"],caution:"Folded towel under knees if kneeling is uncomfortable."},
   {name:"Chin tucks",sets:"12 reps",purpose:"Addresses upper cervical tightness and forward head posture from mechanic work.",steps:["Stand or sit tall against a wall","Glide chin straight back — double chin position","Feel a stretch at the base of your skull","Hold 2s. Release","Horizontal glide only — not a nod"],caution:"Feels almost embarrassingly small. That's correct."},
-  {name:"Doorway pec stretch",sets:"30s each side",purpose:"Opens the chest and anterior shoulder — counteracts 5 years of hunched mechanic posture.",steps:["Stand in doorway, forearm vertical on frame at 90°","Step same-side foot forward slightly","Rotate chest away from arm until you feel the stretch","Hold. Stay tall — don't shrug or lean forward","Switch sides"],caution:"Gentle on the right shoulder — dislocation history. No forcing."},
+  {name:"Doorway pec stretch",sets:"30s each side",purpose:"Opens the chest and anterior shoulder — counteracts 5 years of hunched mechanic posture.",steps:["Stand in doorway, forearm vertical on frame at 90°","Step same-side foot forward slightly","Rotate chest away from arm until you feel the stretch","Hold. Stay tall — don't shrug or lean forward","Switch sides"],caution:"Gentle on the right shoulder. No forcing."},
   {name:"Neck side stretch",sets:"20s each side",purpose:"Releases levator scapulae and upper trapezius — most overloaded by automotive work.",steps:["Sit or stand tall. Relax shoulders down","Drop right ear toward right shoulder — gravity only","Don't rotate, force, or pull with your hand","Breathe. Let the left side release","Return to center. Switch sides"],caution:"Any tingling or electric sensation → stop immediately."},
   {name:"Thoracic floor extension",sets:"60 seconds",purpose:"Counteracts the rounded upper back from mechanic work. Opens the chest.",steps:["Roll a towel under your upper back — mid-thoracic height","Let head and shoulders relax toward the floor","Arms crossed on chest or extended overhead for more stretch","Breathe deeply. Let gravity open your chest"],caution:"Sharp neck pain → bring chin to chest slightly."},
 ];
@@ -324,46 +332,44 @@ const PW=[
   {name:"Leg swings (side to side)",sets:"15 reps each leg",purpose:"Opens hip abductors/adductors — stabilizes your pelvis during walking.",steps:["Face the wall, both hands lightly on it","Swing one leg side to side across your body","Let it swing with momentum, not force","Gradually increase range","Switch legs"],caution:"Pulling in the groin → reduce range."},
   {name:"Hip circles",sets:"10 reps each direction per leg",purpose:"Lubricates the hip joint and activates the glute med.",steps:["Stand on one leg, hands on hips or wall","Draw a large circle with your lifted knee","Keep it smooth and deliberate","Reverse direction for 10 reps","Switch legs"],caution:"Hold a wall if one-leg balance is difficult."},
   {name:"Ankle rolls",sets:"10 reps each direction per foot",purpose:"Warms the ankle joint — reduces the chance of a misstep on trails.",steps:["Stand or sit","Lift one foot slightly","Draw slow circles with your toes","Reverse direction","Switch feet"],caution:"None — do this every time before trail walks."},
-  {name:"Walking knee hugs",sets:"10 steps (5 each leg)",purpose:"Activates glutes and hip flexors dynamically — bridges the warm-up into walking.",steps:["Walk forward slowly","Each step: lift front knee toward chest and hug it briefly","Release and step forward","Alternate legs for 10 steps","Stay tall — don't round your back"],caution:"Slow down or hold a surface if balance is tough."},
+  {name:"Walking knee hugs",sets:"10 steps (5 each leg)",purpose:"Activates glutes and hip flexors dynamically.",steps:["Walk forward slowly","Each step: lift front knee toward chest and hug it briefly","Release and step forward","Alternate legs for 10 steps","Stay tall — don't round your back"],caution:"Slow down or hold a surface if balance is tough."},
 ];
 const PC=[
   {name:"Standing quad stretch",sets:"30s each side",purpose:"Releases hip flexors and quads that tighten during walking.",steps:["Stand on one leg — hold a wall if needed","Bend other knee, bring heel toward your glute","Hold your ankle, knees together, stand tall","Don't lean forward","Hold. Switch sides"],caution:"Keep the supporting knee soft, not locked."},
   {name:"Standing calf stretch",sets:"30s each side",purpose:"Releases the gastrocnemius and soleus — most repetitively loaded during walking.",steps:["Step one foot back into a lunge stance","Press the back heel into the ground, keep leg straight","Lean gently into the front leg until you feel the calf stretch","For deeper: slightly bend the back knee","Hold. Switch sides"],caution:"Press through the heel — don't rise onto toes."},
-  {name:"Hip flexor lunge stretch",sets:"45s each side",purpose:"Counters hip flexor tightening from walking and sitting — primary contributor to your lower back pain.",steps:["Step one foot forward into a lunge, back knee on the ground","Keep torso upright — don't lean forward","Press hips forward until you feel a stretch in the front of the back hip","Hold. Breathe into it. Switch sides"],caution:"No forward lean. If kneeling hurts your knee, do a standing version."},
+  {name:"Hip flexor lunge stretch",sets:"45s each side",purpose:"Counters hip flexor tightening from walking and sitting.",steps:["Step one foot forward into a lunge, back knee on the ground","Keep torso upright — don't lean forward","Press hips forward until you feel a stretch in the front of the back hip","Hold. Breathe into it. Switch sides"],caution:"No forward lean. If kneeling hurts your knee, do a standing version."},
   {name:"Figure-4 piriformis stretch",sets:"45s each side",purpose:"Most important post-walk stretch. The piriformis tightens during walking and compresses the sciatic nerve.",steps:["Lie on back, both knees bent","Cross right ankle over left thigh","Feel it in the right outer hip → hold","For more: gently pull left thigh toward chest","Breathe. Don't force. Switch sides"],caution:"Feel this in the outer hip — not the knee."},
-  {name:"Supine hamstring stretch",sets:"30s each side",purpose:"Lengthens hamstrings — tight hamstrings pull on the pelvis and increase pressure on L4/L5.",steps:["Lie on your back","Bring one knee toward chest, then slowly extend that leg toward ceiling","Hold behind the thigh — keep slight bend in knee","Hold. Don't force. Switch sides"],caution:"Only go as far as comfortable."},
-  {name:"Child's pose",sets:"60 seconds",purpose:"Decompresses the entire spine after the walking load. Always end here.",steps:["Kneel, big toes touching, knees wide","Sit hips back toward heels","Arms extended forward, forehead down","Breathe deeply into your lower back","Fully relax"],caution:"Towel under knees if kneeling is uncomfortable."},
+  {name:"Supine hamstring stretch",sets:"30s each side",purpose:"Lengthens hamstrings — tight hamstrings increase pressure on L4/L5.",steps:["Lie on your back","Bring one knee toward chest, then slowly extend that leg toward ceiling","Hold behind the thigh — keep slight bend in knee","Hold. Don't force. Switch sides"],caution:"Only go as far as comfortable."},
+  {name:"Child's pose",sets:"60 seconds",purpose:"Decompresses the entire spine. Always end here.",steps:["Kneel, big toes touching, knees wide","Sit hips back toward heels","Arms extended forward, forehead down","Breathe deeply into your lower back","Fully relax"],caution:"Towel under knees if kneeling is uncomfortable."},
 ];
 const MEALS=[
-  {name:"Breakfast",time:"7–8am",desc:"Light and protein-based. Don't force it if you're not hungry.",opts:["2 eggs scrambled or over easy + 1 slice sourdough toast","Coffee with oat milk + organic maple syrup","Optional: banana, blueberries, or Greek yogurt"]},
-  {name:"Lunch",time:"~1pm",desc:"Main meal. Protein + complex carb + vegetables. Same thing daily is fine.",opts:["Chicken breast + avocado + greens + mustard on sourdough","Ground beef + roasted peppers + swiss on a wrap","Turkey + hummus + spinach wrap","Any of the above + fruit or handful of nuts"]},
-  {name:"Dinner",time:"6–7pm",desc:"2–3 nights with parents is fine. Your own nights: 30 min max prep.",opts:["Pan-seared chicken thighs + rice + roasted broccoli","Ground beef bowl with rice, peppers, and salsa","Lean beef stir fry with whatever veg is available","Simple pasta with ground beef and tomato sauce"]},
+  {name:"Breakfast",time:"6:15–6:30am — before work",desc:"Quick and protein-based. Prep takes 5 minutes or less. You need fuel before a 7am start.",opts:["2 scrambled eggs + coffee with oat milk + maple syrup","Hard boiled eggs prepped the night before + banana","Greek yogurt + handful of nuts if you're really rushed"]},
+  {name:"Lunch",time:"~12pm — work break",desc:"Still your main meal. Prep it the night before so you're not scrambling. Protein + complex carb + something green.",opts:["Chicken breast + avocado + greens + mustard on sourdough — wrap it, it travels well","Ground beef + rice + roasted peppers in a container","Turkey + hummus + spinach wrap","Any of the above + a piece of fruit"]},
+  {name:"Post-workout snack",time:"~4–4:30pm — after workout",desc:"Small protein hit after your bodyweight session to start the recovery window.",opts:["Handful of nuts + a piece of fruit","Greek yogurt","Hard boiled egg + banana","Protein shake once you're in the gym phase"]},
+  {name:"Dinner",time:"6–7pm",desc:"2–3 nights with parents. Your own nights: 30 min max prep.",opts:["Pan-seared chicken thighs + rice + roasted broccoli","Ground beef bowl with rice, peppers, and salsa","Lean beef stir fry with whatever veg is available","Simple pasta with ground beef and tomato sauce"]},
   {name:"Weekend dining out",time:"Fri/Sat nights",desc:"Guidelines for eating out without derailing progress.",opts:["Protein-forward mains — grilled over fried when possible","Gin + tonic or tequila + club soda — lower-sugar options","Add 16 oz water before bed on nights you drink","One beer max — note how it affects sleep"]},
 ];
 const RULES=[
-  {t:"go",tx:"Morning spine reset every single day. 5 minutes. No excuses."},
-  {t:"go",tx:"Full mobility routine Mon/Wed/Fri. 20 minutes."},
-  {t:"go",tx:"Pre-walk warm-up and post-walk cool-down every time you walk."},
+  {t:"go",tx:"Spine reset every morning before work. Set your alarm 10 minutes earlier."},
+  {t:"go",tx:"Bodyweight workout Mon/Wed/Fri after work. 30 minutes. This is your new training block."},
+  {t:"go",tx:"Mobility Tue/Thu after work. 20 minutes."},
   {t:"go",tx:"Drink water before your coffee every single morning. Always."},
-  {t:"go",tx:"Hit 80–100 oz of water daily. Sciatica and migraines are both worsened by dehydration."},
+  {t:"go",tx:"Hit 80–100 oz of water daily. Bring a water bottle to work."},
+  {t:"go",tx:"Prep lunch the night before. You don't have time to think about food at 6am."},
   {t:"go",tx:"Log every day — even a single sentence."},
-  {t:"warn",tx:"If sciatica flares mid-walk, stop. Turn around. Walk easy back. Never push through nerve pain."},
-  {t:"warn",tx:"No forward bending with straight legs. No heavy lifting from the floor."},
+  {t:"warn",tx:"If sciatica flares during a workout or walk, stop. Do not push through nerve pain."},
+  {t:"warn",tx:"New job = new stress = real migraine trigger. Stay on top of hydration during the workday."},
   {t:"warn",tx:"On nights you drink, add 16 oz water before bed."},
-  {t:"stop",tx:"No crunches, sit-ups, or spinal flexion under load. Not yet."},
-  {t:"stop",tx:"No alcohol on mornings before mobility or walks. Two drinks max."},
+  {t:"stop",tx:"No crunches, sit-ups, or spinal flexion under load."},
+  {t:"stop",tx:"No forcing the right shoulder. Build up to full push-ups gradually."},
 ];
 
-// State
-let checked = JSON.parse(localStorage.getItem('hd-checked')||'{}');
-let oz = parseInt(localStorage.getItem('hd-oz')||'0');
-let logs = JSON.parse(localStorage.getItem('hd-logs')||'[]');
-let calMonth = new Date().getMonth();
-let calYear = new Date().getFullYear();
+let checked=JSON.parse(localStorage.getItem('hd-checked')||'{}');
+let oz=parseInt(localStorage.getItem('hd-oz')||'0');
+let logs=JSON.parse(localStorage.getItem('hd-logs')||'[]');
+let calMonth=new Date().getMonth(), calYear=new Date().getFullYear();
+function save(k,v){localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}
 
-function save(key,val){localStorage.setItem(key,typeof val==='string'?val:JSON.stringify(val));}
-
-// Tab navigation
 function showTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
@@ -372,62 +378,48 @@ function showTab(id,btn){
   if(id==='history')renderCalendar();
 }
 
-// Schedule
 function renderSchedule(){
-  const today = new Date(); today.setHours(0,0,0,0);
-  const todayIso = today.toISOString().slice(0,10);
-  const diffDays = Math.round((today-WS)/86400000);
-  const todayIdx = diffDays>=0&&diffDays<=6?diffDays:-1;
-
-  const grid = document.getElementById('dayGrid');
-  grid.innerHTML = WEEK.map((d,i)=>{
-    const done = !!checked[d.iso];
-    const isToday = i===todayIdx;
-    const tagCls = done?'td':TAG_CLS[d.tag]||'tr';
-    const tagLabel = done?'Done':d.tl;
-    let cellCls = 'dc';
-    if(done) cellCls+=' done';
-    else if(isToday) cellCls+=' today';
-    else if(d.tag==='rest') cellCls+=' rest';
-    return `<div class="${cellCls}">
-      <div class="dname">${d.day}</div>
-      <div class="ddate">${d.date}</div>
-      <span class="dtag ${tagCls}">${tagLabel}</span>
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diff=Math.round((today-WS)/86400000);
+  const todayIdx=diff>=0&&diff<=6?diff:-1;
+  document.getElementById('dayGrid').innerHTML=WEEK.map((d,i)=>{
+    const done=!!checked[d.iso];
+    const isToday=i===todayIdx;
+    const tagCls=done?'td':(TAG_CLS[d.tag]||'tr');
+    let cls='dc'+(done?' done':isToday?' today':d.tag==='rest'?' rest':'');
+    return `<div class="${cls}">
+      <div class="dname">${d.day}</div><div class="ddate">${d.date}</div>
+      <span class="dtag ${tagCls}">${done?'Done':d.tl}</span>
       <div class="ddesc">${d.desc}</div>
-      <button class="cbtn ${done?'done':''}" onclick="toggleDay('${d.iso}')">${done?'✓ Done':'Mark done'}</button>
+      <button class="cbtn${done?' done':''}" onclick="toggleDay('${d.iso}')">${done?'✓ Done':'Mark done'}</button>
     </div>`;
   }).join('');
-
   if(todayIdx>=0){
-    const td = WEEK[todayIdx];
-    document.getElementById('todayCard').innerHTML =
-      `<div style="font-size:13px;font-weight:600;margin-bottom:8px">${td.day}, ${td.date} — ${td.tl}</div>` +
+    const td=WEEK[todayIdx];
+    document.getElementById('todayCard').innerHTML=
+      `<div style="font-size:13px;font-weight:600;margin-bottom:8px">${td.day}, ${td.date} — ${td.tl}</div>`+
       td.tasks.map(t=>`<div style="font-size:12px;color:#555;padding:5px 0;border-bottom:1px solid #f5f5f5">→ ${t}</div>`).join('');
   }
   updateStats();
 }
-
 function toggleDay(iso){
-  checked[iso] = !checked[iso];
-  save('hd-checked',checked);
+  checked[iso]=!checked[iso]; save('hd-checked',checked);
   renderSchedule();
-  renderCalendar();
+  if(document.getElementById('history').classList.contains('active'))renderCalendar();
 }
-
 function updateStats(){
-  const ws=WS.toISOString().slice(0,10), we=WE.toISOString().slice(0,10);
-  const days = WEEK.filter(d=>checked[d.iso]).length;
-  const mob = WEEK.filter(d=>checked[d.iso]&&d.tag==='mob').length;
-  let miles = 0;
+  const ws=WS.toISOString().slice(0,10),we=WE.toISOString().slice(0,10);
+  const days=WEEK.filter(d=>checked[d.iso]).length;
+  const mob=WEEK.filter(d=>checked[d.iso]&&d.tag==='mob').length;
+  let miles=0;
   logs.forEach(l=>{if(l.miles&&l.date>=ws&&l.date<=we)miles+=parseFloat(l.miles)||0;});
-  document.getElementById('sDays').textContent = days;
-  document.getElementById('sMiles').textContent = miles.toFixed(1);
-  document.getElementById('sMob').textContent = mob;
+  document.getElementById('sDays').textContent=days;
+  document.getElementById('sMiles').textContent=miles.toFixed(1);
+  document.getElementById('sMob').textContent=mob;
 }
 
-// Exercises
 function makeExList(arr,id){
-  document.getElementById(id).innerHTML = arr.map((e,i)=>`
+  document.getElementById(id).innerHTML=arr.map((e,i)=>`
     <div class="ex-card" id="${id}_${i}">
       <div class="ex-hdr" onclick="document.getElementById('${id}_${i}').classList.toggle('open')">
         <div><div class="ex-name">${e.name}</div><div class="ex-meta">${e.sets}</div></div>
@@ -443,59 +435,46 @@ function makeExList(arr,id){
     </div>`).join('');
 }
 
-// Meals
 function renderMeals(){
-  document.getElementById('mealCards').innerHTML = MEALS.map(m=>`
+  document.getElementById('mealCards').innerHTML=MEALS.map(m=>`
     <div class="meal-card">
-      <div class="mname">${m.name}</div>
-      <div class="mtime">${m.time}</div>
+      <div class="mname">${m.name}</div><div class="mtime">${m.time}</div>
       <div class="mdesc">${m.desc}</div>
       ${m.opts.map(o=>`<div class="mopt">${o}</div>`).join('')}
     </div>`).join('');
 }
 
-// Rules
 function renderRules(){
   const bg={go:'#E1F5EE',warn:'#FAEEDA',stop:'#FCEBEB'};
   const cl={go:'#085041',warn:'#633806',stop:'#791F1F'};
   const ic={go:'✓',warn:'!',stop:'✕'};
-  document.getElementById('rulesList').innerHTML = RULES.map(r=>`
+  document.getElementById('rulesList').innerHTML=RULES.map(r=>`
     <div class="rule-row">
       <div class="ric" style="background:${bg[r.t]};color:${cl[r.t]}">${ic[r.t]}</div>
       <div>${r.tx}</div>
     </div>`).join('');
 }
 
-// Hydration
 function renderOz(){
-  document.getElementById('ozDisplay').textContent = oz+' oz';
-  document.getElementById('ozBar').style.width = Math.min(100,Math.round(oz))+'%';
+  document.getElementById('ozDisplay').textContent=oz+' oz';
+  document.getElementById('ozBar').style.width=Math.min(100,Math.round(oz))+'%';
 }
 function addOz(n){oz=Math.min(200,oz+n);save('hd-oz',String(oz));renderOz();}
 function resetOz(){oz=0;save('hd-oz','0');renderOz();}
 
-// Walk fields
 function toggleWalkFields(){
-  const v = document.getElementById('logActivity').value.toLowerCase();
-  document.getElementById('walkFields').style.display =
+  const v=document.getElementById('logActivity').value.toLowerCase();
+  document.getElementById('walkFields').style.display=
     (v.includes('walk')||v.includes('outing')||v.includes('hike'))?'block':'none';
 }
-
-// Log
 function renderLogs(){
-  const el = document.getElementById('logEntries');
-  if(!logs.length){
-    el.innerHTML='<div style="text-align:center;padding:20px;font-size:12px;color:#aaa">No entries yet. Log your first day above.</div>';
-    return;
-  }
-  el.innerHTML = logs.map((l,i)=>`
+  const el=document.getElementById('logEntries');
+  if(!logs.length){el.innerHTML='<div style="text-align:center;padding:20px;font-size:12px;color:#aaa">No entries yet.</div>';return;}
+  el.innerHTML=logs.map((l,i)=>`
     <div class="log-entry">
-      <div class="le-hdr">
-        <span class="le-date">${l.date}</span>
-        <button class="del-btn" onclick="deleteLog(${i})">Delete</button>
-      </div>
+      <div class="le-hdr"><span class="le-date">${l.date}</span><button class="del-btn" onclick="deleteLog(${i})">Delete</button></div>
       <div class="le-body">
-        ${l.activity?`<div><strong>Activity:</strong> ${l.activity}${l.miles?`<span class="badge-green">${parseFloat(l.miles).toFixed(1)} mi</span>`:''} ${l.duration?`<span class="badge-blue">${l.duration} min</span>`:''}</div>`:''}
+        ${l.activity?`<div><strong>Activity:</strong> ${l.activity}${l.miles?`<span class="badge-green">${parseFloat(l.miles).toFixed(1)} mi</span>`:''}${l.duration?`<span class="badge-blue">${l.duration} min</span>`:''}</div>`:''}
         ${l.feeling?`<div><strong>Body:</strong> ${l.feeling}</div>`:''}
         ${l.food?`<div><strong>Food:</strong> ${l.food}</div>`:''}
         ${l.sleep?`<div><strong>Sleep:</strong> ${l.sleep}</div>`:''}
@@ -503,104 +482,77 @@ function renderLogs(){
       </div>
     </div>`).join('');
 }
-
 function submitLog(){
-  const date = document.getElementById('logDate').value;
-  const activity = document.getElementById('logActivity').value;
+  const date=document.getElementById('logDate').value;
+  const activity=document.getElementById('logActivity').value;
   if(!date||!activity){alert('Please fill in date and activity.');return;}
-  const entry = {
-    date, activity,
-    miles: document.getElementById('logMiles').value,
-    duration: document.getElementById('logDuration').value,
-    feeling: document.getElementById('logFeeling').value,
-    food: document.getElementById('logFood').value,
-    sleep: document.getElementById('logSleep').value,
-    notes: document.getElementById('logNotes').value,
-    ts: Date.now()
-  };
-  logs.unshift(entry);
+  logs.unshift({date,activity,
+    miles:document.getElementById('logMiles').value,
+    duration:document.getElementById('logDuration').value,
+    feeling:document.getElementById('logFeeling').value,
+    food:document.getElementById('logFood').value,
+    sleep:document.getElementById('logSleep').value,
+    notes:document.getElementById('logNotes').value,
+    ts:Date.now()
+  });
   save('hd-logs',logs);
-  document.getElementById('logActivity').value='';
-  document.getElementById('logMiles').value='';
-  document.getElementById('logDuration').value='';
-  document.getElementById('logFeeling').value='';
-  document.getElementById('logFood').value='';
-  document.getElementById('logSleep').value='';
-  document.getElementById('logNotes').value='';
+  ['logActivity','logMiles','logDuration','logFeeling','logFood','logSleep','logNotes'].forEach(id=>{document.getElementById(id).value='';});
   document.getElementById('walkFields').style.display='none';
-  renderLogs();
-  updateStats();
+  renderLogs(); updateStats();
 }
-
-function deleteLog(i){
-  logs.splice(i,1);
-  save('hd-logs',logs);
-  renderLogs();
-  updateStats();
-}
-
+function deleteLog(i){logs.splice(i,1);save('hd-logs',logs);renderLogs();updateStats();}
 function clearAllLogs(){
   if(!confirm('Clear all log entries? This cannot be undone.'))return;
-  logs=[];
-  save('hd-logs',logs);
-  renderLogs();
-  updateStats();
+  logs=[];save('hd-logs',logs);renderLogs();updateStats();
 }
 
-// Calendar
 function renderCalendar(){
-  const today = new Date(); today.setHours(0,0,0,0);
-  const todayIso = today.toISOString().slice(0,10);
-  document.getElementById('calTitle').textContent = `${MONTH_FULL[calMonth]} ${calYear}`;
-  document.getElementById('prevMonBtn').disabled = false;
-  document.getElementById('nextMonBtn').disabled = new Date(calYear,calMonth+1,1)>today;
-
-  const hdrs = document.getElementById('calDayHeaders');
-  hdrs.innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="cal-dh">${d}</div>`).join('');
-
-  const first = new Date(calYear,calMonth,1);
-  const last = new Date(calYear,calMonth+1,0);
-  const startDow = (first.getDay()+6)%7;
-  let cells = '';
-  for(let i=0;i<startDow;i++) cells+=`<div class="cal-cell other"></div>`;
-  for(let d=1;d<=last.getDate();d++){
-    const date = new Date(calYear,calMonth,d);
-    const iso = date.toISOString().slice(0,10);
-    const before = date<START_DATE, future = date>today;
-    const done = !before&&!future&&!!checked[iso];
-    const isToday = iso===todayIso;
-    let cls = 'cal-cell';
-    if(done) cls+=' done';
-    else if(isToday) cls+=' today';
-    else if(!before&&!future) cls+=' trackable';
-    else cls+=' other';
-    cells+=`<div class="${cls}">${d}</div>`;
-  }
-  document.getElementById('calGrid').innerHTML = cells;
-
-  // Month stats
-  let mDone=0, mMiles=0;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayIso=today.toISOString().slice(0,10);
+  document.getElementById('calTitle').textContent=`${MONTH_FULL[calMonth]} ${calYear}`;
+  document.getElementById('prevMonBtn').disabled=false;
+  document.getElementById('nextMonBtn').disabled=new Date(calYear,calMonth+1,1)>today;
+  document.getElementById('calDayHeaders').innerHTML=
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="cal-dh">${d}</div>`).join('');
+  const first=new Date(calYear,calMonth,1);
+  const last=new Date(calYear,calMonth+1,0);
+  const startDow=(first.getDay()+6)%7;
+  let cells='';
+  for(let i=0;i<startDow;i++)cells+=`<div class="cal-cell other"></div>`;
   for(let d=1;d<=last.getDate();d++){
     const date=new Date(calYear,calMonth,d);
-    if(date>=START_DATE&&date<=today){
-      const iso=date.toISOString().slice(0,10);
-      if(checked[iso])mDone++;
-    }
+    const iso=date.toISOString().slice(0,10);
+    const before=date<START_DATE, future=date>today;
+    const done=!before&&!future&&!!checked[iso];
+    const isToday=iso===todayIso;
+    const clickable=!before&&!future;
+    let cls='cal-cell';
+    if(done)cls+=' done';
+    if(isToday)cls+=' istoday';
+    if(!done&&!isToday&&clickable)cls+=' trackable';
+    if(before||future)cls+=' other';
+    if(clickable)cls+=' clickable';
+    cells+=`<div class="${cls}"${clickable?` onclick="toggleCalDay('${iso}')"`:''}>${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=cells;
+  let mDone=0,mMiles=0;
+  for(let d=1;d<=last.getDate();d++){
+    const date=new Date(calYear,calMonth,d);
+    if(date>=START_DATE&&date<=today&&checked[date.toISOString().slice(0,10)])mDone++;
   }
   logs.forEach(l=>{
-    if(l.miles&&l.date){
-      const d=new Date(l.date+'T12:00:00');
-      if(d.getMonth()===calMonth&&d.getFullYear()===calYear) mMiles+=parseFloat(l.miles)||0;
-    }
+    if(l.miles&&l.date){const d=new Date(l.date+'T12:00:00');if(d.getMonth()===calMonth&&d.getFullYear()===calYear)mMiles+=parseFloat(l.miles)||0;}
   });
-  const trackable = Array.from({length:last.getDate()},(_,i)=>new Date(calYear,calMonth,i+1))
-    .filter(d=>d>=START_DATE&&d<=today).length;
-  const pct = trackable>0?Math.round(mDone/trackable*100):0;
-  document.getElementById('monthStats').innerHTML = [
-    ['Days done',mDone],['Miles logged',mMiles.toFixed(1)],['Completion',pct+'%']
-  ].map(([l,v])=>`<div class="sbox"><div class="snum">${v}</div><div class="slbl2">${l}</div></div>`).join('');
+  const trackable=Array.from({length:last.getDate()},(_,i)=>new Date(calYear,calMonth,i+1)).filter(d=>d>=START_DATE&&d<=today).length;
+  const pct=trackable>0?Math.round(mDone/trackable*100):0;
+  document.getElementById('monthStats').innerHTML=
+    [['Days done',mDone],['Miles logged',mMiles.toFixed(1)],['Completion',pct+'%']].map(([l,v])=>
+      `<div class="sbox"><div class="snum">${v}</div><div class="slbl2">${l}</div></div>`).join('');
 }
-
+function toggleCalDay(iso){
+  checked[iso]=!checked[iso];save('hd-checked',checked);
+  renderCalendar(); renderSchedule();
+}
 function prevMonth(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;renderCalendar();}
 function nextMonth(){
   const today=new Date();
@@ -608,25 +560,12 @@ function nextMonth(){
   renderCalendar();
 }
 
-// Set today's date in log form
-document.getElementById('logDate').valueAsDate = new Date();
-
-// Init
+document.getElementById('logDate').valueAsDate=new Date();
 renderSchedule();
-makeExList(SR,'srList');
-makeExList(EX,'exList');
-makeExList(PW,'pwList');
-makeExList(PC,'pcList');
-renderMeals();
-renderRules();
-renderOz();
-renderLogs();
-renderCalendar();
-
-// Service Worker registration for PWA
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
+makeExList(SR,'srList'); makeExList(BW,'bwList'); makeExList(EX,'exList');
+makeExList(PW,'pwList'); makeExList(PC,'pcList');
+renderMeals(); renderRules(); renderOz(); renderLogs(); renderCalendar();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
 </body>
 </html>
